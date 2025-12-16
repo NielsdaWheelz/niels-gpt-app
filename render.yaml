@@ -17,6 +17,6 @@ services:
       - key: CKPT_DIR
         value: checkpoints
       - key: ALLOWED_ORIGINS
-        value: https://nielseriknandal.com,https://REPLACE_WITH_VERCEL_DOMAIN,http://localhost:3000
+        value: https://nielseriknandal.com,https://niels-gpt-app.vercel.app/
       - key: HF_TOKEN
         sync: false
