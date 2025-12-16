@@ -7,12 +7,22 @@ interface TokenStreamProps {
   steps: StepData[];
   selectedStep: number;
   selectedHead: number;
+  renderMode: "ascii" | "utf-8";
+}
+
+// Helper: check if token_id is printable ASCII (32-126)
+function asciiChar(tokenId: number): string {
+  if (tokenId >= 32 && tokenId <= 126) {
+    return String.fromCharCode(tokenId);
+  }
+  return "·"; // middle dot placeholder
 }
 
 export default function TokenStream({
   steps,
   selectedStep,
   selectedHead,
+  renderMode,
 }: TokenStreamProps) {
   if (steps.length === 0) {
     return (
@@ -50,6 +60,74 @@ export default function TokenStream({
     .map((x) => x.i);
   const top3Set = new Set(sortedIndices);
 
+  // Build UTF-8 decoded completion from token_text
+  const decodedCompletion = steps
+    .slice(0, selectedStep + 1)
+    .map((s) => s.token_text)
+    .join("");
+
+  if (renderMode === "utf-8") {
+    // UTF-8 mode: primary = decoded track, secondary = deemphasized token boxes
+    return (
+      <div className="p-4 space-y-3">
+        {/* Decoded UTF-8 track (primary) */}
+        <div>
+          <div className="text-[10px] text-zinc-500 font-mono mb-1">
+            utf-8 view (best-effort; bytes are ground truth)
+          </div>
+          <pre className="bg-zinc-800/50 border border-zinc-700 rounded p-3 text-sm font-mono whitespace-pre-wrap break-words">
+            {decodedCompletion}
+          </pre>
+        </div>
+
+        {/* Token boxes (secondary, deemphasized) */}
+        <div>
+          <div className="text-[10px] text-zinc-500 font-mono mb-1">
+            token stream (byte-level)
+          </div>
+          <div className="flex flex-wrap gap-1 items-center opacity-50 scale-95">
+            {steps.slice(0, selectedStep + 1).map((step, idx) => {
+              const attnWeight = genWeights[idx] || 0;
+              const transformed = contrastTransform(attnWeight);
+              const opacity = 0.3 + transformed * 0.7;
+              const isCurrent = idx === selectedStep;
+              const shouldPulse = top3Set.has(idx);
+
+              return (
+                <motion.span
+                  key={idx}
+                  className={`px-2 py-1 rounded text-xs font-mono relative ${
+                    isCurrent
+                      ? "bg-blue-600/30 border border-blue-500/50"
+                      : "bg-zinc-700/50"
+                  }`}
+                  style={{
+                    opacity: isCurrent ? 1 : opacity,
+                  }}
+                  animate={
+                    shouldPulse
+                      ? {
+                          scale: [1, 1.05, 1],
+                        }
+                      : {}
+                  }
+                  transition={{
+                    duration: 1,
+                    repeat: shouldPulse ? Infinity : 0,
+                    ease: "easeInOut",
+                  }}
+                >
+                  {step.token_display}
+                </motion.span>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ASCII mode: primary = ASCII char track with attention highlighting
   return (
     <div className="p-4">
       <div className="flex flex-wrap gap-1 items-center">
@@ -65,6 +143,7 @@ export default function TokenStream({
           return (
             <motion.span
               key={idx}
+              title={step.token_display} // hover shows \xNN etc
               className={`px-2 py-1 rounded text-sm font-mono relative ${
                 isCurrent
                   ? "bg-blue-600/30 border border-blue-500/50 ring-2 ring-blue-500/30"
@@ -91,7 +170,7 @@ export default function TokenStream({
                 ease: "easeInOut",
               }}
             >
-              {step.token_display}
+              {asciiChar(step.token_id)}
               {isCurrent && (
                 <motion.div
                   className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"

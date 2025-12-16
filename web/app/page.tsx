@@ -25,6 +25,7 @@ export default function Home() {
   const [assistantCompletion, setAssistantCompletion] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [selectedLayer, setSelectedLayer] = useState(0);
+  const [renderMode, setRenderMode] = useState<"ascii" | "utf-8">("ascii");
   const [error, setError] = useState<string | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -139,6 +140,8 @@ export default function Home() {
           selectedLayer={selectedLayer}
           onLayerChange={setSelectedLayer}
           messages={messages}
+          renderMode={renderMode}
+          onRenderModeChange={setRenderMode}
         />
       </div>
 
