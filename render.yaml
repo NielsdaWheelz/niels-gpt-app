@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: niels-gpt-api
+    runtime: python
+    region: virginia
+    plan: starter
+    rootDir: api
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DEVICE
+        value: cpu
+      - key: CKPT_REPO_ID
+        value: nnandal/niels-gpt
+      - key: CKPT_FILENAME
+        value: best.pt
+      - key: CKPT_DIR
+        value: checkpoints
+      - key: ALLOWED_ORIGINS
+        value: https://nielseriknandal.com,https://REPLACE_WITH_VERCEL_DOMAIN,http://localhost:3000
+      - key: HF_TOKEN
+        sync: false

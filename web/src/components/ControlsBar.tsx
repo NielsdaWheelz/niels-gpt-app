@@ -12,6 +12,8 @@ interface ControlsBarProps {
   isPlaying: boolean;
   onPlayPause: () => void;
   onFullMatrixToggle: () => void;
+  renderMode: "ascii" | "utf-8";
+  onRenderModeChange: (mode: "ascii" | "utf-8") => void;
 }
 
 export default function ControlsBar({
@@ -26,6 +28,8 @@ export default function ControlsBar({
   isPlaying,
   onPlayPause,
   onFullMatrixToggle,
+  renderMode,
+  onRenderModeChange,
 }: ControlsBarProps) {
   return (
     <div className="flex flex-wrap items-center gap-4 p-4 bg-zinc-800/50 border-b border-zinc-700">
@@ -58,6 +62,19 @@ export default function ControlsBar({
               {h}
             </option>
           ))}
+        </select>
+      </div>
+
+      {/* Render mode toggle */}
+      <div className="flex items-center gap-2">
+        <label className="text-xs text-zinc-400 font-mono">render mode</label>
+        <select
+          value={renderMode}
+          onChange={(e) => onRenderModeChange(e.target.value as "ascii" | "utf-8")}
+          className="bg-zinc-700 border border-zinc-600 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+        >
+          <option value="ascii">ascii</option>
+          <option value="utf-8">utf-8</option>
         </select>
       </div>
 

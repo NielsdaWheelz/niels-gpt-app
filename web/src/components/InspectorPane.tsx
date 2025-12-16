@@ -14,6 +14,8 @@ interface InspectorPaneProps {
   selectedLayer: number;
   onLayerChange: (layer: number) => void;
   messages: Message[];
+  renderMode: "ascii" | "utf-8";
+  onRenderModeChange: (mode: "ascii" | "utf-8") => void;
 }
 
 export default function InspectorPane({
@@ -22,6 +24,8 @@ export default function InspectorPane({
   selectedLayer,
   onLayerChange,
   messages,
+  renderMode,
+  onRenderModeChange,
 }: InspectorPaneProps) {
   const [selectedHead, setSelectedHead] = useState(0);
   const [selectedStep, setSelectedStep] = useState(0);
@@ -81,6 +85,8 @@ export default function InspectorPane({
         isPlaying={isPlaying}
         onPlayPause={handlePlayPause}
         onFullMatrixToggle={() => setShowFullMatrix(true)}
+        renderMode={renderMode}
+        onRenderModeChange={onRenderModeChange}
       />
 
       <div className="flex-1 overflow-y-auto">
@@ -92,13 +98,20 @@ export default function InspectorPane({
         >
           {/* Token stream */}
           <div className="border-b border-zinc-800">
-            <div className="px-4 pt-3 pb-1 text-xs text-zinc-400 font-mono">
-              token stream
+            <div className="px-4 pt-3 pb-1 flex items-center justify-between">
+              <span className="text-xs text-zinc-400 font-mono">token stream</span>
+              <span
+                className="text-[10px] text-zinc-500 font-mono"
+                title="Attention is not an explanation; it's just a distribution over previous tokens"
+              >
+                ⓘ attention ≠ explanation
+              </span>
             </div>
             <TokenStream
               steps={steps}
               selectedStep={selectedStep}
               selectedHead={selectedHead}
+              renderMode={renderMode}
             />
           </div>
 
